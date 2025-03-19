@@ -1,0 +1,12 @@
+# Flutter/Dart-specific ignores
+build/
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+
+# IDE-specific ignores
+.idea/
+.vscode/
+.DS_Store
