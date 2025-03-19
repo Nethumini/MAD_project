@@ -11,6 +11,39 @@ class SignUppage extends StatefulWidget {
 class _SignUppageState extends State<SignUppage> {
   bool _obscurePassword = true;
   bool _agreeToTerms = false;
+  bool _isFormValid = false;
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  final RegExp _emailRegex =
+      RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+
+  void _validateForm() {
+    setState(() {
+      _isFormValid = _nameController.text.isNotEmpty &&
+          _emailRegex.hasMatch(_emailController.text) &&
+          _passwordController.text.length >= 6 &&
+          _agreeToTerms;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_validateForm);
+    _emailController.addListener(_validateForm);
+    _passwordController.addListener(_validateForm);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +80,7 @@ class _SignUppageState extends State<SignUppage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
+                  controller: _nameController,
                   decoration: InputDecoration(
                     hintText: 'Enter your name',
                     border: InputBorder.none,
@@ -56,32 +90,39 @@ class _SignUppageState extends State<SignUppage> {
                 ),
               ),
               const SizedBox(height: 15),
-              // Email field
+              // Email field with validation
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     hintText: 'Enter your email',
                     border: InputBorder.none,
                     prefixIcon: Icon(Icons.mail_outline, color: Colors.grey[600]),
                     contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                    errorText: _emailController.text.isNotEmpty &&
+                            !_emailRegex.hasMatch(_emailController.text)
+                        ? "Enter a valid email"
+                        : null,
                   ),
                 ),
               ),
               const SizedBox(height: 15),
-              // Password field
+              // Password field with validation
               Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
+                  controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: 'Enter your password',
+                    hintText: 'Enter your password (min 6 characters)',
                     border: InputBorder.none,
                     prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[600]),
                     suffixIcon: IconButton(
@@ -96,6 +137,10 @@ class _SignUppageState extends State<SignUppage> {
                       },
                     ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                    errorText: _passwordController.text.isNotEmpty &&
+                            _passwordController.text.length < 6
+                        ? "Password must be at least 6 characters"
+                        : null,
                   ),
                 ),
               ),
@@ -108,6 +153,7 @@ class _SignUppageState extends State<SignUppage> {
                     onChanged: (value) {
                       setState(() {
                         _agreeToTerms = value!;
+                        _validateForm();
                       });
                     },
                     shape: RoundedRectangleBorder(
@@ -118,19 +164,19 @@ class _SignUppageState extends State<SignUppage> {
                     child: RichText(
                       text: TextSpan(
                         text: 'I agree to the healthcare ',
-                        style: TextStyle(color: Colors.black),
+                        style: const TextStyle(color: Colors.black),
                         children: [
                           TextSpan(
                             text: 'Terms of Service',
-                            style: TextStyle(color: Colors.blue),
+                            style: const TextStyle(color: Colors.blue),
                           ),
-                          TextSpan(
+                          const TextSpan(
                             text: ' and ',
                             style: TextStyle(color: Colors.black),
                           ),
                           TextSpan(
                             text: 'Privacy Policy',
-                            style: TextStyle(color: Colors.blue),
+                            style: const TextStyle(color: Colors.blue),
                           ),
                         ],
                       ),
@@ -139,13 +185,15 @@ class _SignUppageState extends State<SignUppage> {
                 ],
               ),
               const SizedBox(height: 30),
-              // Sign Up button
+              // Sign Up button (Disabled when invalid)
               ElevatedButton(
-                onPressed: () {
-                  // Sign up logic would go here
-                },
+                onPressed: _isFormValid
+                    ? () {
+                        // Sign up logic would go here
+                      }
+                    : null, // Disabled when form is invalid
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                  backgroundColor: _isFormValid ? Colors.blue : Colors.grey, // Grey when disabled
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -164,7 +212,7 @@ class _SignUppageState extends State<SignUppage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account?"),
+                  const Text("Already have an account?"),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
